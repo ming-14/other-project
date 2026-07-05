@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>力量训练指南</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏋️</text></svg>">
+    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./css/components.css">
+    <link rel="stylesheet" href="./css/training.css">
+</head>
+<body>
+    <!-- 页面容器 -->
+    <div class="app-container">
+        <!-- 头部 -->
+        <header class="app-header">
+            <div class="header__left">
+                <h1 class="app-title">力量训练指南</h1>
+            </div>
+            <div class="header__right">
+                <button class="btn btn--secondary" id="theme-toggle">🌙</button>
+                <button class="btn btn--secondary" id="help-btn">?</button>
+            </div>
+        </header>
+
+        <!-- 主要内容 -->
+        <main class="app-main">
+            <!-- 计划选择页面 -->
+            <section class="plan-selection" id="plan-selection">
+                <div class="section-header">
+                    <h2>选择训练计划</h2>
+                    <p>根据您的需求选择合适的训练计划</p>
+                </div>
+
+                <div class="plan-filters">
+                    <button class="filter-btn filter-btn--active" data-filter="all">全部</button>
+                    <button class="filter-btn" data-filter="regular">常规训练</button>
+                    <button class="filter-btn" data-filter="post-run">跑后训练</button>
+                    <button class="filter-btn" data-filter="pre-run">跑前热身</button>
+                    <button class="filter-btn" data-filter="knee">膝关节保护</button>
+                </div>
+
+                <div class="plan-list" id="plan-list">
+                    <!-- 训练计划将通过JavaScript动态生成 -->
+                </div>
+            </section>
+        </main>
+
+        <!-- 侧边栏 -->
+        <aside class="app-sidebar">
+            <div class="sidebar-section">
+                <h3>动作库</h3>
+                <div class="exercise-library">
+                    <input type="text" class="search-input" placeholder="搜索动作..." id="exercise-search">
+                    <div class="exercise-list" id="exercise-list">
+                        <!-- 动作库将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- 模态框：计划详情 -->
+    <div class="modal" id="plan-detail-modal">
+        <div class="modal__content">
+            <div class="modal__header">
+                <h3 id="modal-plan-name">计划名称</h3>
+                <button class="modal__close" id="close-modal">&times;</button>
+            </div>
+            <div class="modal__body">
+                <p id="modal-plan-description">计划描述</p>
+                <div class="modal__stats">
+                    <div class="stat-item">
+                        <span class="stat-label">时长</span>
+                        <span class="stat-value" id="modal-plan-duration">35分钟</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">难度</span>
+                        <span class="stat-value" id="modal-plan-difficulty">中级</span>
+                    </div>
+                </div>
+                <h4>计划结构</h4>
+                <ul id="modal-plan-structure"></ul>
+            </div>
+            <div class="modal__footer">
+                <button class="btn btn--secondary" id="cancel-plan-btn">取消</button>
+                <button class="btn btn--primary" id="start-plan-btn">开始训练</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框：动作详情 -->
+    <div class="modal" id="exercise-detail-modal">
+        <div class="modal__content">
+            <div class="modal__header">
+                <h3 id="modal-exercise-name">动作名称</h3>
+                <button class="modal__close" id="close-exercise-modal">&times;</button>
+            </div>
+            <div class="modal__body">
+                <div class="modal__video-container">
+                    <video id="modal-exercise-video" controls style="display: none;">
+                        <source src="" type="video/mp4">
+                        您的浏览器不支持HTML5视频播放。
+                    </video>
+                    <div class="video-placeholder" id="modal-video-placeholder">
+                        <div class="video-placeholder__icon">📹</div>
+                        <p class="video-placeholder__text">此动作暂时没有视频演示</p>
+                    </div>
+                </div>
+                <div class="modal__details">
+                    <div class="detail-section">
+                        <h4>目的</h4>
+                        <p id="modal-exercise-purpose">动作目的</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>关键要领</h4>
+                        <p id="modal-exercise-tips">动作要领</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>常见错误</h4>
+                        <p id="modal-exercise-mistakes">暂无常见错误信息</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal__footer">
+                <button class="btn btn--secondary" id="close-exercise-detail-btn">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知提示 -->
+    <div class="notification" id="notification"></div>
+
+    <!-- JavaScript文件 -->
+    <script src="./data/exercises.js"></script>
+    <script src="./data/trainingPlans.js"></script>
+    <script src="./js/ui.js"></script>
+    <script src="./js/main.js"></script>
+</body>
+</html>
