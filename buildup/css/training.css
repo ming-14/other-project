@@ -1,0 +1,605 @@
+/* 训练页面特定样式 */
+
+/* 训练状态指示器 */
+.training-status {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-left: var(--spacing-sm);
+}
+
+.training-status--active {
+  background-color: #27ae60;
+  color: white;
+}
+
+.training-status--paused {
+  background-color: #f39c12;
+  color: white;
+}
+
+.training-status--completed {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* 休息状态样式 */
+.resting .countdown-container {
+  background-color: rgba(243, 156, 18, 0.1);
+  border-color: #f39c12;
+}
+
+.resting .countdown__time {
+  color: #f39c12;
+}
+
+.resting .countdown-progress__fill {
+  background-color: #f39c12;
+}
+
+/* 动作状态样式 */
+.exercising .countdown-container {
+  background-color: rgba(39, 174, 96, 0.1);
+  border-color: #27ae60;
+}
+
+.exercising .countdown__time {
+  color: #27ae60;
+}
+
+.exercising .countdown-progress__fill {
+  background-color: #27ae60;
+}
+
+/* 训练完成样式 */
+.training-completed {
+  text-align: center;
+  padding: var(--spacing-xl);
+  background-color: rgba(39, 174, 96, 0.1);
+  border: 1px solid #27ae60;
+  border-radius: var(--border-radius);
+  margin: var(--spacing-lg) 0;
+}
+
+.training-completed__icon {
+  font-size: 4rem;
+  margin-bottom: var(--spacing-lg);
+  color: #27ae60;
+}
+
+.training-completed h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
+}
+
+.training-completed p {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* 动作序列指示器 */
+.exercise-sequence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  margin: var(--spacing-md) 0;
+  padding: var(--spacing-md);
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+}
+
+.sequence-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.sequence-item--pending {
+  background-color: var(--bg-primary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.sequence-item--current {
+  background-color: var(--primary-color);
+  color: white;
+  border: 1px solid var(--primary-color);
+  transform: scale(1.1);
+}
+
+.sequence-item--completed {
+  background-color: #27ae60;
+  color: white;
+  border: 1px solid #27ae60;
+}
+
+.sequence-item--rest {
+  background-color: #f39c12;
+  color: white;
+  border: 1px solid #f39c12;
+}
+
+/* 音频控制 */
+.audio-control {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin: var(--spacing-md) 0;
+  padding: var(--spacing-sm);
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius);
+}
+
+.audio-control label {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.audio-control input[type="checkbox"] {
+  cursor: pointer;
+}
+
+/* 全屏模式 */
+.fullscreen-mode {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-primary);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+}
+
+.fullscreen-mode .app-header,
+.fullscreen-mode .app-sidebar {
+  display: none;
+}
+
+.fullscreen-mode .app-main {
+  flex: 1;
+  padding: var(--spacing-md);
+  overflow-y: auto;
+}
+
+.fullscreen-mode .training-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.fullscreen-mode .video-container {
+  flex: 1;
+  margin: 0;
+}
+
+.fullscreen-mode .video-player {
+  height: 100%;
+}
+
+.fullscreen-mode .video-player video {
+  height: 100%;
+  object-fit: contain;
+}
+
+/* 训练数据统计 */
+.training-stats {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-lg);
+  margin: var(--spacing-lg) 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.training-stats h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  transition: var(--transition);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-card__value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-xs);
+}
+
+.stat-card__label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+/* 动作提示动画 */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.action-hint {
+  animation: pulse 2s infinite;
+  background-color: rgba(74, 105, 189, 0.1);
+  border: 2px solid var(--primary-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+}
+
+.action-hint h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.action-hint p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* 倒计时动画 */
+@keyframes countdown-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(74, 105, 189, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(74, 105, 189, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(74, 105, 189, 0);
+  }
+}
+
+.countdown--warning {
+  animation: countdown-pulse 1s infinite;
+}
+
+.countdown--warning .countdown__time {
+  color: #e74c3c;
+}
+
+.countdown--warning .countdown-progress__fill {
+  background-color: #e74c3c;
+}
+
+/* 训练中断提示 */
+.training-interrupt {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: var(--spacing-md);
+  background-color: #f39c12;
+  color: white;
+  text-align: center;
+  font-weight: 600;
+  z-index: 1000;
+  transform: translateY(-100%);
+  transition: transform 0.3s ease;
+}
+
+.training-interrupt.show {
+  transform: translateY(0);
+}
+
+/* 加载状态 */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  color: var(--text-secondary);
+}
+
+.loading::after {
+  content: "";
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-color);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  margin-left: var(--spacing-sm);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 确认对话框 */
+.confirm-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--transition);
+}
+
+.confirm-dialog.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.confirm-dialog__content {
+  background-color: var(--bg-primary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-lg);
+  max-width: 400px;
+  width: 90%;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(20px);
+  transition: var(--transition);
+}
+
+.confirm-dialog.show .confirm-dialog__content {
+  transform: translateY(0);
+}
+
+.confirm-dialog__header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.confirm-dialog__icon {
+  font-size: 1.5rem;
+  color: #f39c12;
+}
+
+.confirm-dialog__header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.confirm-dialog__body {
+  margin-bottom: var(--spacing-lg);
+}
+
+.confirm-dialog__body p {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.confirm-dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+}
+
+/* 训练总结 */
+.training-summary {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-lg);
+  margin: var(--spacing-lg) 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.training-summary h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-lg);
+  margin: var(--spacing-lg) 0;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.summary-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.summary-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.summary-chart {
+  margin: var(--spacing-lg) 0;
+  padding: var(--spacing-md);
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+}
+
+/* 快捷键提示 */
+.keyboard-shortcuts {
+  position: fixed;
+  bottom: var(--spacing-lg);
+  right: var(--spacing-lg);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  opacity: 0.7;
+  transition: var(--transition);
+}
+
+.keyboard-shortcuts:hover {
+  opacity: 1;
+}
+
+.keyboard-shortcuts h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.shortcut-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.shortcut-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-md);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.shortcut-item:last-child {
+  margin-bottom: 0;
+}
+
+.shortcut-key {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-family: monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .exercise-sequence {
+    padding: var(--spacing-sm);
+  }
+  
+  .sequence-item {
+    width: 28px;
+    height: 28px;
+    font-size: 0.7rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--spacing-sm);
+  }
+  
+  .stat-card {
+    padding: var(--spacing-sm);
+  }
+  
+  .stat-card__value {
+    font-size: 1.5rem;
+  }
+  
+  .summary-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+  
+  .keyboard-shortcuts {
+    bottom: var(--spacing-md);
+    right: var(--spacing-md);
+    padding: var(--spacing-sm);
+  }
+  
+  .shortcut-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+}
+
+@media (max-width: 576px) {
+  .training-stats {
+    padding: var(--spacing-md);
+  }
+  
+  .training-summary {
+    padding: var(--spacing-md);
+  }
+  
+  .exercise-sequence {
+    gap: var(--spacing-xs);
+  }
+  
+  .sequence-item {
+    width: 24px;
+    height: 24px;
+    font-size: 0.6rem;
+  }
+}

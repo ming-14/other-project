@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>代码工具</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="encode/encode.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- 选项卡导航 -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="code">代码</button>
+            <button class="tab-btn" data-tab="convert">转换</button>
+            <button class="tab-btn" data-tab="settings">设置</button>
+        </div>
+
+        <!-- 选项卡内容 -->
+        <div class="tab-content">
+            <!-- 代码选项卡 -->
+            <div id="code" class="tab-panel active">
+                <div class="output-container">
+                    <h3>输出结果</h3>
+                    <textarea id="output" spellcheck="false" style="display: block;"></textarea>
+                    <div id="output-highlight" spellcheck="false" style="display: none;" tabindex="0" contenteditable="true"></div>
+                </div>
+                <div class="input-container">
+                    <h3>输入代码</h3>
+                    <textarea id="input" spellcheck="false"></textarea>
+                    <div class="buttons">
+                        <button id="send-btn">发送</button>
+                        <button id="comment-btn">代码注释</button>
+                        <button id="copy-btn">复制</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 转换选项卡 -->
+            <div id="convert" class="tab-panel">
+                <div class="render-container">
+                    <h3>HTML渲染结果</h3>
+                    <div class="render-output">
+                        <div id="codeshow">
+                            <div id="codeshow_ecode_1"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 设置选项卡 -->
+            <div id="settings" class="tab-panel">
+                <div class="settings-container">
+                    <h3>设置</h3>
+                    <div class="setting-item">
+                        <label for="theme">主题:</label>
+                        <select id="theme">
+                            <option value="light">浅色</option>
+                            <option value="dark">深色</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="font-size">字体大小:</label>
+                        <input type="range" id="font-size" min="12" max="24" value="16">
+                        <span id="font-size-value">16px</span>
+                    </div>
+                    <div class="setting-item">
+                        <label for="auto-save">自动保存:</label>
+                        <input type="checkbox" id="auto-save">
+                    </div>
+                    <button id="save-settings">保存设置</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        (function () {
+            const watermarkFun = () => {
+                const id = '1145141919810'
+                if (document.getElementById(id) !== null) {
+                    document.body.removeChild(document.getElementById(id))
+                }
+                const str = 'Mode by Rikka'
+                const canvasEle = document.createElement('canvas')
+                canvasEle.width = 300
+                canvasEle.height = 150
+                const ctx = canvasEle.getContext('2d')
+                ctx.rotate(-20 * Math.PI / 180)
+                ctx.font = '16px serif'
+                ctx.fillStyle = 'rgba(200, 200, 200, 0.8)'
+                ctx.textAlign = 'left' // 文本左对齐
+                ctx.fillText(str, canvasEle.width / 16, canvasEle.height / 2)
+                const divEle = document.createElement('div')
+                divEle.id = id
+                divEle.style.width = document.documentElement.clientWidth - 10 + 'px'
+                divEle.style.height = document.documentElement.clientHeight - 20 + 'px'
+                divEle.style.pointerEvents = 'none'
+                divEle.style.position = 'fixed'
+                divEle.style.top = '3px'
+                divEle.style.left = '5px'
+                divEle.style.background = 'url(' + canvasEle.toDataURL() + ') left top repeat'
+                divEle.style.zIndex = 999999
+                document.body.appendChild(divEle)
+                return id
+            }
+            watermarkFun()
+            window.onresize = () => {
+                watermarkFun()
+            }
+        })();
+    </script>
+    <script src="encode/encode.js"></script>
+    <script src="js/highlight.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+        (function () {
+            if (document.body.classList.contains('dark-mode')) {
+                color.number = "rgb(179, 85, 85)";
+                color.sysCommand = "rgb(147, 147, 255)";
+                color.sysCommandIgnore = "rgb(219, 219, 219)";
+                color.dataType = "rgb(223, 210, 148)";
+                color.function = "rgb(196, 69, 69)";
+                color.constant = "rgb(218, 139, 218)";
+                color.remark = "rgb(91, 185, 91)";
+                color.quto = "rgb(44, 138, 138)";
+            }
+            else {
+                color.number = "#800000";
+                color.sysCommand = "#0000FF";
+                color.sysCommandIgnore = "#808080";
+                color.dataType = "#DECB6B";
+                color.function = "#800000";
+                color.constant = "#DE61DE";
+                color.remark = "#008000";
+                color.quto = "#008080";
+            }
+        })();
+    </script>
+</body>
+
+</html>

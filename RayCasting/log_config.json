@@ -1,0 +1,28 @@
+{
+    "global_level": "WARNING",
+    "module_levels": {
+        "core.game": "INFO",
+        "core.event_bus": "WARNING",
+        "core.state_machine": "WARNING",
+        "world.maze": "INFO"
+    },
+    "handlers": [
+        {
+            "type": "console",
+            "level": "WARNING",
+            "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+            "date_format": "%Y-%m-%d %H:%M:%S"
+        },
+        {
+            "type": "file",
+            "level": "DEBUG",
+            "filepath": "logs/game.log",
+            "rotation_type": "size",
+            "max_bytes": 10485760,
+            "backup_count": 3
+        }
+    ],
+    "async_enabled": true,
+    "async_queue_size": 1000,
+    "shutdown_timeout": 5.0
+}

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>力量训练指南 - 训练中</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏋️</text></svg>">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/training.css">
+</head>
+<body>
+    <!-- 页面容器 -->
+    <div class="app-container">
+        <!-- 头部 -->
+        <header class="app-header">
+            <div class="header__left">
+                <h1 class="app-title">力量训练指南</h1>
+            </div>
+            <div class="header__right">
+                <button class="btn btn--secondary" id="theme-toggle">🌙</button>
+                <button class="btn btn--secondary" id="help-btn">?</button>
+            </div>
+        </header>
+
+        <!-- 主要内容 -->
+        <main class="app-main">
+            <!-- 训练页面 -->
+            <section class="training-page" id="training-page">
+                <!-- 训练进度 -->
+                <div class="training-progress">
+                    <div class="progress__header">
+                        <h2 id="current-plan-name">训练计划</h2>
+                        <div class="progress__stats">
+                            <span id="current-segment">热身</span>
+                            <span class="divider">|</span>
+                            <span id="progress-text">1/10</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-bar__fill" id="progress-bar"></div>
+                    </div>
+                </div>
+
+                <!-- 训练内容区域 -->
+                <div class="training-content">
+                    <!-- 左侧：视频播放 -->
+                    <div class="training-content__left">
+                        <div class="video-container">
+                            <div class="video-player" id="video-player">
+                                <video id="exercise-video" controls>
+                                    <source src="" type="video/mp4">
+                                    您的浏览器不支持HTML5视频播放。
+                                </video>
+                                <div class="video-placeholder" id="video-placeholder">
+                                    <div class="video-placeholder__icon">📹</div>
+                                    <p class="video-placeholder__text">此动作暂时没有视频演示</p>
+                                </div>
+                            </div>
+                            <div class="video-controls">
+                                <button class="video-control-btn" id="play-pause-btn">▶️</button>
+                                <button class="video-control-btn" id="rewind-btn">⏪</button>
+                                <button class="video-control-btn" id="fast-forward-btn">⏩</button>
+                                <button class="video-control-btn" id="fullscreen-btn">⛶</button>
+                                <button class="video-control-btn" id="float-btn">🗗</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右侧：训练指引 -->
+                    <div class="training-content__right">
+                        <!-- 动作信息 -->
+                        <div class="exercise-info">
+                            <h3 id="exercise-name">动作名称</h3>
+                            <p class="exercise-purpose" id="exercise-purpose">动作目的</p>
+                            
+                            <div class="exercise-details">
+                                <div class="detail-item">
+                                    <span class="detail-label">组数：</span>
+                                    <span id="exercise-sets">3-4组</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label" id="reps-time-label">次数/时间：</span>
+                                    <span id="exercise-reps">45-60秒</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">组间休息：</span>
+                                    <span id="exercise-rest">60秒</span>
+                                </div>
+                            </div>
+                            
+                            <div class="exercise-tips">
+                                <div class="exercise-tips-header">
+                                    <h4>关键要领：</h4>
+                                    <button class="tips-toggle-btn" id="tips-toggle-btn">▼</button>
+                                </div>
+                                <div class="exercise-tips-content" id="exercise-tips-content">
+                                    <p id="exercise-tips">膝盖不超过脚尖，大腿与地面平行</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 倒计时 -->
+                        <div class="countdown-container">
+                            <div class="countdown" id="countdown">
+                                <div class="countdown__time" id="countdown-time">45</div>
+                                <div class="countdown__label" id="countdown-label">秒</div>
+                            </div>
+                            <div class="countdown-progress">
+                                <div class="countdown-progress__fill" id="countdown-progress"></div>
+                            </div>
+                        </div>
+
+                        <!-- 训练控制按钮 -->
+                        <div class="training-controls">
+                            <button class="btn btn--secondary" id="prev-btn">上一组</button>
+                            <button class="btn btn--primary btn--large" id="start-pause-btn">开始</button>
+                            <button class="btn btn--secondary" id="next-btn">下一组</button>
+                            <button class="btn btn--danger" id="exit-btn">退出</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 侧边栏 -->
+        <aside class="app-sidebar">
+            <div class="sidebar-section">
+                <h3>动作库</h3>
+                <div class="exercise-library">
+                    <input type="text" class="search-input" placeholder="搜索动作..." id="exercise-search">
+                    <div class="exercise-list" id="exercise-list">
+                        <!-- 动作库将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- 模态框：动作详情 -->
+    <div class="modal" id="exercise-detail-modal">
+        <div class="modal__content">
+            <div class="modal__header">
+                <h3 id="modal-exercise-name">动作名称</h3>
+                <button class="modal__close" id="close-exercise-modal">&times;</button>
+            </div>
+            <div class="modal__body">
+                <div class="exercise-detail__video">
+                    <video id="modal-exercise-video" controls>
+                        <source src="" type="video/mp4">
+                        您的浏览器不支持HTML5视频播放。
+                    </video>
+                    <div class="video-placeholder" id="modal-video-placeholder">
+                        <div class="video-placeholder__icon">📹</div>
+                        <p class="video-placeholder__text">此动作暂时没有视频演示</p>
+                    </div>
+                </div>
+                <div class="exercise-detail__info">
+                    <p id="modal-exercise-purpose">动作目的</p>
+                    <h4>关键要领</h4>
+                    <p id="modal-exercise-tips">动作要领</p>
+                    <h4>常见错误</h4>
+                    <p id="modal-exercise-mistakes">常见错误</p>
+                </div>
+            </div>
+            <div class="modal__footer">
+                <button class="btn btn--primary" id="close-exercise-detail-btn">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知提示 -->
+    <div class="notification" id="notification"></div>
+    
+    <!-- 模态框：动作详情 -->
+    <div class="modal" id="exercise-detail-modal">
+        <div class="modal__content">
+            <div class="modal__header">
+                <h3 id="modal-exercise-name">动作名称</h3>
+                <button class="modal__close" id="close-exercise-modal">&times;</button>
+            </div>
+            <div class="modal__body">
+                <div class="modal__video-container">
+                    <video id="modal-exercise-video" controls style="display: none;">
+                        <source src="" type="video/mp4">
+                        您的浏览器不支持HTML5视频播放。
+                    </video>
+                    <div class="video-placeholder" id="modal-video-placeholder">
+                        <div class="video-placeholder__icon">📹</div>
+                        <p class="video-placeholder__text">此动作暂时没有视频演示</p>
+                    </div>
+                </div>
+                <div class="modal__details">
+                    <div class="detail-section">
+                        <h4>目的</h4>
+                        <p id="modal-exercise-purpose">动作目的</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>关键要领</h4>
+                        <p id="modal-exercise-tips">动作要领</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>常见错误</h4>
+                        <p id="modal-exercise-mistakes">暂无常见错误信息</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal__footer">
+                <button class="btn btn--secondary" id="close-exercise-detail-btn">关闭</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 视频悬浮窗容器 -->
+    <div class="video-float-container" id="video-float-container" style="display: none;">
+        <div class="video-float-header">
+            <span class="video-float-title">视频悬浮窗</span>
+            <button class="video-float-close" id="video-float-close">×</button>
+        </div>
+        <div class="video-float-content">
+            <video id="float-exercise-video" controls style="width: 100%; height: 100%; object-fit: contain;">
+                <source src="" type="video/mp4">
+                您的浏览器不支持HTML5视频播放。
+            </video>
+        </div>
+        <div class="video-float-resize" id="video-float-resize">↘</div>
+    </div>
+
+    <!-- JavaScript文件 -->
+    <script src="data/exercises.js"></script>
+    <script src="data/trainingPlans.js"></script>
+    <script src="js/video.js"></script>
+    <script src="js/progress.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/training.js"></script>
+    <script src="js/training-main.js"></script>
+</body>
+</html>
