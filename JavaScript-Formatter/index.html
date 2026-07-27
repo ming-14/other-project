@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>JS代码美化工具</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui" />
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/font.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/CodeMirror.css">
+</head>
+
+<body>
+    <div id="header">
+        <h1>JavaScript Formatter</h1>
+        <h2>在线JS代码格式化、JS代码美化工具</h2>
+    </div>
+    <div id="main">
+        <section class="tool-content-container">
+            <div class="form-group form-group-item-center">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <p class="result-title">
+                            <strong><i class="iconfont icon-edit"></i> 将需要格式化的JS代码粘贴到下面的文本框：</strong>
+                            <button class="btn btn-primary btn-sm btn-copy btn-copy-code" disabled>复制</button>
+                        </p>
+                        <textarea class="codemirror-control hidden" data-bindto=".btn-code-format" placeholder="请在这里输入需要格式化的JS代码"></textarea>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <fieldset>
+                            <legend>JavaScript格式化选项</legend>
+                            <div class="form-group form-group-item-center format-option-wrap">
+                                <div class="row">
+                                    <label class="col-xs-12 col-md-2 control-label">缩进方式</label>
+                                    <div class="col-xs-12 col-md-4">
+                                        <select id="option-indent" class="form-control">
+                                            <option value="1">以Tab方式缩进</option>
+                                            <option value="2">以2个空格缩进</option>
+                                            <option value="4">以4个空格缩进</option>
+                                            <option value="8">以8个空格缩进</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <label class="col-xs-12 col-md-2 control-label">是否换行</label>
+                                    <div class="col-xs-12 col-md-4">
+                                        <select id="option-wrap-line-length" class="form-control">
+                                            <option value="0">不换行</option>
+                                            <option value="80">超过80字符换行</option>
+                                            <option value="120">超过120字符换行</option>
+                                            <option value="160">超过160字符换行</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <label class="col-xs-12 col-md-2 control-label">大括号位置</label>
+                                    <div class="col-xs-12 col-md-10">
+                                        <ul class="options inline">
+                                            <li><input type="radio" class="custom-radio" name="brace-style" id="option-brace-style-collapse" value="collapse" checked><label for="option-brace-style-collapse">开始大括号和控制语句/方法名在同一行</label></li>
+                                            <li><input type="radio" class="custom-radio" name="brace-style" id="option-brace-style-expand" value="expand"><label for="option-brace-style-expand">开始大括号单独一行显示</label></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <label class="col-xs-12 col-md-2 align-self-start control-label">圆括号选项</label>
+                                    <div class="col-xs-12 col-md-10">
+                                        <ul class="options">
+                                            <li><input type="checkbox" class="custom-checkbox" id="option-space-before-conditional" value="1" checked><label for="option-space-before-conditional">条件语句和圆括号之间添加空格（由 <code>if(a == 1)</code> 变成 <code>if (a == 1)</code>）</label></li>
+                                            <li><input type="checkbox" class="custom-checkbox" id="option-space-after-named-function" value="1"><label for="option-space-after-named-function">方法名和圆括号之间添加空格（由 <code>function hi()</code> 变成 <code>function hi ()</code>）</label></li>
+                                            <li><input type="checkbox" class="custom-checkbox" id="option-space-after-anon-function" value="1"><label for="option-space-after-anon-function">匿名方法中，在圆括号之前添加空格。（由 <code>function()</code> 变成 <code>function ()</code>）</label></li>
+                                            <li><input type="checkbox" class="custom-checkbox" id="option-space-in-paren" value="1"><label for="option-space-in-paren">圆括号中包含值时，在其内部添加空格。（由 <code>hi(a, b)</code> 变成 <code>hi( a, b )</code>）</label></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <label class="col-xs-12 col-md-2 align-self-start control-label">其他选项</label>
+                                    <div class="col-xs-12 col-md-10">
+                                        <ul class="options">
+                                            <li><input type="checkbox" class="custom-checkbox" id="option-break-chained-methods" value="1" checked><label for="option-break-chained-methods">对于链式方法，每个方法独立一行。</label></li>
+                                            <li><input type="checkbox" class="custom-checkbox" id="option-end-with-newline" value="1"><label for="option-end-with-newline">在代码的最后添加一空行</label></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="button-group mt-1">
+                            <button type="button" class="btn btn-primary btn-lg btn-code-format" data-click-handler>格式化JS代码</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+                <script>
+            var scripts = [], styles = [];
+        </script>
+        <script src="js/Js-Formatter.js"></script>
+        <script src="js/jquery-3.4.1.min.js"></script>
+        <script src="js/base.js"></script>
+    </div>
+</body>
+</html>
