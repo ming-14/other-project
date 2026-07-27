@@ -1,0 +1,114 @@
+[
+  {
+    "type": "template",
+    "errors": {
+      "default": {
+        "max_concurrency": 1,
+        "timeout": 30,
+        "max_errors": 3,
+        "failure_pause": 40
+      },
+      "strict": {
+        "max_concurrency": 1,
+        "timeout": 10,
+        "max_errors": 3,
+        "failure_pause": 40
+      }
+    },
+    "rate_limits": {
+      "default": [
+        { "type": "count_per_time", "time": 60, "count": 10 },
+        { "type": "time_per_req", "time": 6 }
+      ]
+    }
+  },
+  {
+    "type": "single",
+    "name": "My AI",
+    "enabled": true,
+    "key": {
+      "type": "openai",
+      "base_url": "https://api.example.com/v1",
+      "api_key": "YOUR_API_KEY_HERE",
+      "label": "My AI",
+      "enabled": true
+    },
+    "models": {
+      "model-id": {
+        "model_id": "model-id",
+        "context-length": 128000,
+        "output-length": 4096,
+        "name": "Model Name",
+        "family": "model-family",
+        "reasoning": true,
+        "tool_call": true,
+        "attachment": false,
+        "modalities": {
+          "input": ["text"],
+          "output": ["text"]
+        },
+        "knowledge": "2025-01"
+      }
+    },
+    "alias": "my"
+  },
+  {
+    "type": "pool",
+    "name": "My Pool",
+    "enabled": true,
+    "keys": [
+      {
+        "type": "openai",
+        "base_url": "https://api.provider1.com/v1",
+        "api_key": "YOUR_API_KEY_HERE",
+        "label": "Provider 1",
+        "enabled": true,
+        "errors": { "type": "template", "id": "default" },
+        "rate_limits": [
+          { "type": "template", "id": "default" }
+        ],
+        "models": {
+          "model-a": {
+            "model_id": "model-a",
+            "context-length": 128000,
+            "output-length": 4096,
+            "name": "Model A",
+            "family": "model-family",
+            "reasoning": true,
+            "tool_call": true,
+            "attachment": false,
+            "modalities": {
+              "input": ["text"],
+              "output": ["text"]
+            }
+          }
+        }
+      },
+      {
+        "type": "openai",
+        "base_url": "https://api.provider2.com/v1",
+        "api_key": "YOUR_API_KEY_HERE",
+        "label": "Provider 2",
+        "enabled": true,
+        "errors": { "type": "template", "id": "strict" },
+        "models": {
+          "model-b": {
+            "model_id": "model-b",
+            "context-length": 32000,
+            "output-length": 4096,
+            "name": "Model B",
+            "family": "other-family",
+            "reasoning": false,
+            "tool_call": true,
+            "attachment": true,
+            "modalities": {
+              "input": ["text", "image"],
+              "output": ["text"]
+            }
+          }
+        }
+      }
+    ],
+    "alias": "pool"
+  }
+]
