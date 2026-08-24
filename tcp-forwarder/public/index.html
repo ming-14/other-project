@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>TCP 端口转发</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<h1>TCP 端口转发</h1>
+<div class="subtitle">运行于 Termux | 管理面板 : <span id="webPort"></span></div>
+<div class="gw-box"><span class="label">USB 网关: </span><span class="val" id="gatewayDisplay">检测中...</span></div>
+<div class="stats" id="stats">加载中...</div>
+<div id="emptyState" class="empty" style="display:none">暂无转发规则，点击下方添加</div>
+<table id="rulesTable" style="display:none">
+<thead><tr><th>名称</th><th>监听</th><th>目标</th><th>状态</th><th></th></tr></thead>
+<tbody id="rulesBody"></tbody>
+</table>
+<div id="ruleCards"></div>
+<div class="card" id="proxyCard">
+  <h2>流量代理</h2>
+  <div class="proxy-line">状态 <span class="badge off" id="proxyStatus">已停止</span> <span class="proto-badge proto-tcp">HTTP + SOCKS5</span></div>
+  <div class="form-group">
+    <label class="form-label">代理端口（HTTP 与 SOCKS5 共用，自动识别协议）</label>
+    <input id="proxyPort" type="number" min="1" max="65535" placeholder="例如 8088">
+  </div>
+  <div class="form-actions">
+    <button class="btn-primary" id="proxyToggleBtn" onclick="toggleProxy()">启动</button>
+  </div>
+  <div class="proxy-hint">在设备上把 HTTP 或 SOCKS5 代理指向 <span class="mono" id="proxyAddr">本机IP:端口</span>，上网流量将全部经此转发</div>
+</div>
+<button class="add-btn" onclick="showAddForm()">+ 添加规则</button>
+<button class="fab" onclick="showAddForm()" aria-label="添加规则">+</button>
+<div class="card" id="addForm">
+<h2 id="formTitle">新建规则</h2>
+<div class="form-group">
+  <label class="form-label">名称（可选）</label>
+  <input id="fName" placeholder="例如 SSH 转发">
+</div>
+<div class="form-group">
+  <label class="form-label">监听端口</label>
+  <input id="fListen" type="number" min="1" max="65535" placeholder="例如 2222">
+</div>
+<div class="form-group">
+  <label class="form-label">目标主机（填 <b>usb_gateway</b> 自动检测 USB 共享 IP）</label>
+  <input id="fHost" placeholder="usb_gateway 或 192.168.1.100">
+</div>
+<div class="form-group">
+  <label class="form-label">目标端口</label>
+  <input id="fPort" type="number" min="1" max="65535" placeholder="例如 22">
+</div>
+<div class="form-group">
+  <label class="form-label">协议</label>
+  <select id="fProtocol">
+    <option value="tcp">TCP</option>
+    <option value="ftp">FTP</option>
+  </select>
+</div>
+<div class="form-actions">
+  <button class="btn-primary" id="formSubmitBtn" onclick="addRule()">添加</button>
+  <button class="btn-cancel" onclick="hideAddForm()">取消</button>
+</div>
+</div>
+<script src="/app.js"></script>
+</body>
+</html>

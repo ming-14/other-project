@@ -1,0 +1,78 @@
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,system-ui,sans-serif;background:#0d1117;color:#c9d1d9;padding:16px;max-width:700px;margin:0 auto}
+h1{font-size:20px;margin-bottom:4px;color:#58a6ff}
+.subtitle{font-size:12px;color:#8b949e;margin-bottom:16px}
+.stats{font-size:13px;color:#8b949e;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;margin-bottom:20px}
+th{text-align:left;font-size:12px;color:#8b949e;padding:6px 8px;border-bottom:1px solid #21262d}
+td{padding:8px;border-bottom:1px solid #21262d;font-size:14px}
+.mono{font-family:monospace;color:#79c0ff}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.badge.on{background:#1a4731;color:#3fb950}
+.badge.off{background:#4a2020;color:#f85149}
+.actions{white-space:nowrap}
+.btn-sm{padding:6px 12px;border:none;border-radius:4px;cursor:pointer;font-size:12px;margin-left:4px}
+.btn-toggle{background:#1f6feb;color:#fff}
+.btn-toggle:hover{background:#388bfd}
+.btn-danger{background:#da3633;color:#fff}
+.btn-danger:hover{background:#f85149}
+.btn-edit{background:#d29922;color:#fff}
+.btn-edit:hover{background:#e3b341}
+.add-btn{background:#238636;color:#fff;padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-size:14px;width:100%;margin-bottom:20px}
+.add-btn:hover{background:#2ea043}
+.card{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;margin-bottom:16px}
+.card h2{font-size:16px;margin-bottom:12px;color:#c9d1d9}
+input{background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:14px;width:100%;margin-bottom:8px}
+input:focus{outline:none;border-color:#58a6ff}
+.form-row{display:flex;gap:8px;margin-bottom:0}
+.form-row input{flex:1}
+.form-label{font-size:12px;color:#8b949e;margin-bottom:4px;display:block}
+.form-group{margin-bottom:10px}
+.form-actions{display:flex;gap:8px;margin-top:12px}
+.btn-primary{background:#238636;color:#fff;padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-size:14px}
+.btn-primary:hover{background:#2ea043}
+.btn-cancel{background:#21262d;color:#c9d1d9;padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-size:14px}
+.btn-cancel:hover{background:#30363d}
+#addForm{display:none}
+.empty{text-align:center;padding:30px;color:#8b949e}
+.gw-box{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px}
+.gw-box .label{color:#8b949e}
+.gw-box .val{color:#79c0ff;font-family:monospace;font-weight:600}
+select{background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:14px;width:100%;margin-bottom:8px}
+select:focus{outline:none;border-color:#58a6ff}
+.proto-badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;margin-top:2px}
+.proto-tcp{background:#1f6feb33;color:#58a6ff}
+.proto-ftp{background:#d2992233;color:#e3b341}
+.gw-missing{color:#f85149}
+
+/* 代理卡片 */
+.proxy-line{font-size:13px;color:#8b949e;margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.proxy-hint{font-size:12px;color:#8b949e;margin-top:10px}
+.proxy-hint .mono{color:#79c0ff}
+
+/* ---- 窄屏卡片列表（宽度 <= 640px 时替代表格） ---- */
+#ruleCards{display:none}
+.rule-card{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:12px 14px;margin-bottom:10px}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+.card-name{font-size:15px;font-weight:600;color:#c9d1d9}
+.card-line{font-size:13px;color:#8b949e;margin-bottom:3px}
+.card-line .mono{color:#79c0ff}
+.card-actions{display:flex;gap:8px;margin-top:10px}
+.card-actions .btn-sm{flex:1;margin-left:0;padding:10px 0;font-size:14px}
+
+/* ---- 悬浮添加按钮（仅窄屏显示） ---- */
+.fab{position:fixed;right:16px;bottom:20px;width:56px;height:56px;border-radius:50%;background:#238636;color:#fff;border:none;font-size:28px;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.45);display:none;z-index:20}
+.fab:active{transform:scale(.94)}
+
+/* ---- 窄屏适配 ---- */
+@media (max-width:640px){
+  #rulesTable{display:none!important}
+  #ruleCards{display:block}
+  /* 底部给 FAB 让位 */
+  body{padding-bottom:92px}
+  .add-btn{display:none}
+  h1{font-size:22px}
+  input,select{padding:12px;font-size:16px}
+  .form-actions .btn-primary,.form-actions .btn-cancel{flex:1;padding:12px 16px}
+  .fab{display:block}
+}

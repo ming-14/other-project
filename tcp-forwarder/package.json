@@ -1,0 +1,9 @@
+{
+  "name": "tcp-forwarder",
+  "version": "1.0.0",
+  "description": "TCP port forwarder with web UI for Termux",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  }
+}
