@@ -1,0 +1,38 @@
+{
+  "local_keys": [],
+  "upstreams": [
+    {
+      "max_concurrency": 1,
+      "api_key": "sk-apikey1",
+      "base_url": "https://example.com/v1",
+      "name": "example1",
+      "weight": 1,
+      "models": ["*"]
+    },
+    {
+      "max_concurrency": 1,
+      "api_key": "sk-apikey2",
+      "base_url": "https://example.com/v1",
+      "name": "example2",
+      "weight": 1,
+      "models": ["*"]
+    },
+    {
+      "max_concurrency": 1,
+      "api_key": "sk-apikey3",
+      "base_url": "https://example.com/v1",
+      "name": "example3",
+      "weight": 1,
+      "models": ["*"]
+    }
+  ],
+  "listen": "127.0.0.1:18080",
+  "retry_times": 3,
+  "circuit": {
+    "cooldown_seconds": 15,
+    "fail_threshold": 5
+  },
+  "models_cache_ttl_seconds": 60,
+  "max_body_size": 67108864
+}
+
