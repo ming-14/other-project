@@ -17,8 +17,8 @@ var fs = require('fs');
 var path = require('path');
 var cp = require('child_process');
 
-/* node 可执行路径：优先环境变量 NODE，默认取 AGENTS.md 中约定的测试 node */
-var NODE = process.env.NODE || 'C:\\UserProgram\\node-v13.0.0-win-x64\\node.exe';
+/* node 可执行路径：优先环境变量 NODE，默认取系统 PATH 中的 node */
+var NODE = process.env.NODE || 'node';
 var ROOT = path.join(__dirname, '..');
 var WEB_PORT = 18080;
 var FTP_LISTEN = 15210, FTP_TARGET = 15211;

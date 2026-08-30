@@ -64,7 +64,7 @@
 ## 验收标准
 
 1. `node --check` 全部文件通过。
-2. `test/smoke.js` 62 项全绿（`NODE=C:\UserProgram\node-v13.0.0-win-x64\node.exe`）。
+2. `test/smoke.js` 62 项全绿（`NODE` 取系统 PATH 中的 node）。
 3. 无残留：无未使用的 require / 无兼容导出 / 无重复桥接实现。
 4. `grep` 确认 app.js 不再包含路由/静态/MIME/网关实现。
 5. docs/analysis.md 与 docs/plan.md 随代码提交。

@@ -1,0 +1,6 @@
+openai-pool.exe
+openai-pool.exe~
+*.exe~
+config.json
+*.test
+*.test.exe

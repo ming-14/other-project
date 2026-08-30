@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // requestModel 提取请求体中的 model 字段,用于按上游 models 配置路由。
@@ -51,26 +52,35 @@ func isStreamingResponse(resp *http.Response) bool {
 
 var errNoThinkingContent = errors.New("上游未返回思考内容")
 
+// errStreamCheckFailed 流式思考校验阶段失败(尚未写任何字节,可安全切换)。
+var errStreamCheckFailed = errors.New("stream check failed, no bytes written")
+
 // copyResponseWithThinkingCheck 拷贝 2xx 响应,但请求要求思考时,
 // 校验响应中确实包含思考内容;不包含则返回 errNoThinkingContent 触发上游切换。
 // 注意:检测期间尚未向客户端写入任何字节,切换重试是安全的。
 func (g *Gateway) copyResponseWithThinkingCheck(w http.ResponseWriter, resp *http.Response, requireThinking bool) error {
 	if !requireThinking {
-		copyResponse(w, resp)
-		return nil
+		return g.copyResponse(w, resp, nil)
 	}
 	if isStreamingResponse(resp) {
-		return copyStreamingWithThinkingCheck(w, resp)
+		return g.copyStreamingWithThinkingCheck(w, resp)
 	}
-	return copyNonStreamingWithThinkingCheck(w, resp)
+	return g.copyNonStreamingWithThinkingCheck(w, resp)
 }
 
-// copyStreamingWithThinkingCheck 缓冲 SSE 流的前若干个事件,检查是否出现
-// reasoning_content;出现则把缓冲内容+剩余流原样交给客户端,否则报错。
-// 使用 bufio.Reader 保持缓冲,检测完成后剩余数据仍可继续读。
-func copyStreamingWithThinkingCheck(w http.ResponseWriter, resp *http.Response) error {
+// checkStreamingThinking 读取 SSE 流前若干个事件,检查是否出现思考内容。
+// 校验阶段受 stream_idle_timeout 空闲超时约束,不向客户端写入任何字节。
+// 返回是否找到思考内容,以及已缓冲的数据和 bufio.Reader(调用方可在校验通过后
+// 先取消其他在途请求,再透传 buf 内容 + br 剩余流)。
+func (g *Gateway) checkStreamingThinking(resp *http.Response) (bool, *bytes.Buffer, *bufio.Reader, error) {
 	const maxCheckEvents = 8 // 前 8 个 SSE 事件内必须出现思考内容
-	br := bufio.NewReaderSize(resp.Body, 16*1024)
+	idleTimeout := time.Duration(g.cfg.StreamIdleTimeout) * time.Second
+
+	var body io.Reader = resp.Body
+	if idleTimeout > 0 {
+		body = newStreamIdleReader(resp.Body, resp.Body, idleTimeout)
+	}
+	br := bufio.NewReaderSize(body, 16*1024)
 	var buf bytes.Buffer
 	events := 0
 	found := false
@@ -81,7 +91,7 @@ func copyStreamingWithThinkingCheck(w http.ResponseWriter, resp *http.Response) 
 			if err == io.EOF {
 				break
 			}
-			return fmt.Errorf("read upstream stream: %w", err)
+			return false, nil, nil, fmt.Errorf("%w: read upstream stream: %v", errStreamCheckFailed, err)
 		}
 		buf.WriteString(line)
 		line = strings.TrimRight(line, "\r\n")
@@ -98,27 +108,47 @@ func copyStreamingWithThinkingCheck(w http.ResponseWriter, resp *http.Response) 
 			events++
 		}
 	}
+	return found, &buf, br, nil
+}
 
+// copyStreamingWithThinkingCheck 校验 + 透传 SSE 流(顺序模式用)。
+// 校验通过后立即透传缓冲内容+剩余流,透传阶段带 SSE 完整性检查。
+func (g *Gateway) copyStreamingWithThinkingCheck(w http.ResponseWriter, resp *http.Response) error {
+	found, buf, br, err := g.checkStreamingThinking(resp)
+	if err != nil {
+		return err
+	}
 	if !found {
 		return errNoThinkingContent
 	}
-
 	copyResponseHeaders(w, resp.Header)
 	w.WriteHeader(resp.StatusCode)
-	io.Copy(w, &buf)
-	io.Copy(w, br)
-	return nil
+	w.Write(buf.Bytes())
+	idleTimeout := time.Duration(g.cfg.StreamIdleTimeout) * time.Second
+	return g.copyStreamToClient(w, br, resp.Body, idleTimeout, scanSSECompletion(buf.Bytes()))
+}
+
+// checkNonStreamingThinking 读取完整 body 检查思考内容,不向客户端写入任何字节。
+// 整体读取受 upstream_timeout 超时约束。无思考内容时返回 (body, errNoThinkingContent),
+// body 仍可用于兜底透传。
+func (g *Gateway) checkNonStreamingThinking(resp *http.Response) ([]byte, error) {
+	timeout := time.Duration(g.cfg.UpstreamTimeout) * time.Second
+	body, err := readAllWithTimeout(resp.Body, 1<<20, timeout)
+	if err != nil {
+		return nil, err
+	}
+	if !bytes.Contains(body, []byte("reasoning_content")) && !bytes.Contains(body, []byte("thinking_content")) {
+		return body, errNoThinkingContent
+	}
+	return body, nil
 }
 
 // copyNonStreamingWithThinkingCheck 非流式响应:读完整 body 后检查
-// reasoning_content / thinking_content 字段,存在则写回客户端。
-func copyNonStreamingWithThinkingCheck(w http.ResponseWriter, resp *http.Response) error {
-	body, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+// reasoning_content / thinking_content 字段,存在则写回客户端(顺序模式用)。
+func (g *Gateway) copyNonStreamingWithThinkingCheck(w http.ResponseWriter, resp *http.Response) error {
+	body, err := g.checkNonStreamingThinking(resp)
 	if err != nil {
-		return fmt.Errorf("read upstream response: %w", err)
-	}
-	if !bytes.Contains(body, []byte("reasoning_content")) && !bytes.Contains(body, []byte("thinking_content")) {
-		return errNoThinkingContent
+		return err
 	}
 	copyResponseHeaders(w, resp.Header)
 	w.WriteHeader(resp.StatusCode)

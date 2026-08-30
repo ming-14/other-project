@@ -27,13 +27,16 @@ func fakeUpstream(t *testing.T, name string, handler http.HandlerFunc) (Upstream
 
 func testGateway(t *testing.T, ups []UpstreamConfig, keys []string, retry int) *Gateway {
 	t.Helper()
+	if retry < 1 {
+		retry = 1
+	}
 	cfg := &Config{
-		Upstreams:       ups,
-		LocalKeys:       keys,
-		RetryTimes:      retry,
-		MaxBodySize:     1 << 20,
-		Circuit:         CircuitConfig{FailThreshold: 100, CooldownSeconds: 1},
-		ModelsCacheTTL:  60,
+		Upstreams:      ups,
+		LocalKeys:      keys,
+		RetryTimes:     retry,
+		MaxBodySize:    1 << 20,
+		Circuit:        CircuitConfig{FailThreshold: 100, CooldownSeconds: 1},
+		ModelsCacheTTL: 60,
 	}
 	return NewGateway(cfg)
 }
@@ -131,7 +134,7 @@ func TestFailoverOn5xx(t *testing.T) {
 		}
 	}
 	require.GreaterOrEqual(t, badCalls.Load(), int32(1), "坏上游应被选中过")
-	require.GreaterOrEqual(t, goodCalls.Load(), badCalls.Load(), "每次坏上游失败都应切换到好上游")
+	require.GreaterOrEqual(t, goodCalls.Load(), int32(1), "坏上游重试耗尽后应切换到好上游")
 }
 
 // TestAllUpstreamsFailed 验证全部上游失败时透传最后一次尝试的上游错误响应。
@@ -155,28 +158,25 @@ func TestAllUpstreamsFailed(t *testing.T) {
 	}
 }
 
-// TestClientErrorNotRetried 验证 4xx(非 429)不重试:直接透传,其他上游不被打扰。
-func TestClientErrorNotRetried(t *testing.T) {
+// TestClientErrorRetried 验证 4xx 也重试:401 上游重试耗尽后切换到 good 上游成功。
+func TestClientErrorRetried(t *testing.T) {
 	badCfg, _, badCalls := fakeUpstream(t, "bad", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 		w.Write([]byte(`{"error":{"message":"invalid key","type":"invalid_request_error"}}`))
 	})
-	badCfg.Weight = 100 // 权重远大于 good,确保选到 bad
-	goodCfg, _, goodCalls := fakeUpstream(t, "good", okCompletion("never-called"))
+	badCfg.Weight = 100 // 权重远大于 good,确保先选到 bad
+	goodCfg, _, goodCalls := fakeUpstream(t, "good", okCompletion("after-401"))
 	goodCfg.Weight = 1
 	gw := testGateway(t, []UpstreamConfig{badCfg, goodCfg}, nil, 3)
 
 	body := `{"model":"m1","messages":[]}`
-	// 由于 bad 权重高,第一次请求几乎必选 bad → 401 → 直接返回(不重试)
 	resp, respBody := doRelay(t, gw, http.MethodPost, "/v1/chat/completions", "", body)
-	if resp.StatusCode != http.StatusUnauthorized {
+	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("status = %d, body = %s", resp.StatusCode, respBody)
 	}
-	if !strings.Contains(respBody, "invalid key") {
-		t.Errorf("expected upstream 401 body passthrough, got %s", respBody)
-	}
 	require.GreaterOrEqual(t, badCalls.Load(), int32(1), "401 上游应被选中")
-	require.Zero(t, goodCalls.Load(), "4xx 不得重试到其他上游")
+	require.GreaterOrEqual(t, goodCalls.Load(), int32(1), "401 重试耗尽后应切换到好上游")
+	require.Contains(t, respBody, "after-401")
 }
 
 // TestRetryOn429 验证 429 限流会切换重试。
@@ -196,7 +196,7 @@ func TestRetryOn429(t *testing.T) {
 		t.Fatalf("status = %d, body = %s", resp.StatusCode, respBody)
 	}
 	require.GreaterOrEqual(t, busyCalls.Load(), int32(1), "429 上游应被选中")
-	require.GreaterOrEqual(t, goodCalls.Load(), busyCalls.Load(), "每次 429 都应切换到好上游")
+	require.GreaterOrEqual(t, goodCalls.Load(), int32(1), "429 重试耗尽后应切换到好上游")
 }
 
 // TestAuth 验证本地多 Key 鉴权。

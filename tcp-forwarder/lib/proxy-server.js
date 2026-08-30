@@ -1,6 +1,7 @@
 'use strict';
 
 var net = require('net');
+var dns = require('dns');
 var http = require('http');
 var https = require('https');
 var bridge = require('./bridge');
@@ -21,8 +22,8 @@ var bridge = require('./bridge');
  * 给目标，剩余数据（body、后续 keep-alive 请求）与原连接双向桥接透传，
  * 不做 body 边界解析，keep-alive 复用天然正确。
  *
- * 域名解析走 DNS over HTTPS（DoH），避免代理端用运营商 DNS 解析
- * 暴露访问的域名；DoH 失败时 fallback 系统 DNS 保证可用性。
+ * 域名解析由代理端自行完成（UDP 53，服务器经 DNS_SERVERS 配置），
+ * 不依赖系统默认解析配置，解析结果带缓存兼顾可用性与性能。
  */
 
 module.exports = { start: startProxyServer };
@@ -42,16 +43,18 @@ function findHeaderEnd(buf) {
   return -1;
 }
 
-/* ───── DoH 域名解析 ─────
- * 默认阿里 DoH（国内可达），可换成腾讯 doh.pub 或 Cloudflare cloudflare-dns.com。
+/* ───── 域名解析 ─────
+ * 用 Node 内置 dns.Resolver 发 UDP 53 查询。服务器列表经 DNS_SERVERS 环境变量
+ * 配置（默认 127.0.0.1,8.8.8.8,1.1.1.1）：优先本机解析服务，失败或超时再
+ * 尝试外部公共 DNS。可用环境变量覆盖：DNS_SERVERS=8.8.8.8,1.1.1.1 node app.js
  * 缓存 TTL 取应答 TTL（夹在 60s~3600s），解析失败短缓存 30s 防重试风暴；
  * 同一域名并发查询只发一次，挂起回调在结果返回后统一唤醒。
  *
  * 缓存容量上限 DNS_CACHE_MAX：Map 迭代序即插入序，插入超限时淘汰最旧条目，
  * 防止长期运行域名无限累积导致内存膨胀。
  */
-var DOH_ENDPOINT = process.env.DOH_ENDPOINT || 'https://dns.alidns.com/resolve';
-var DOH_TIMEOUT = 5000;
+var DNS_SERVERS = (process.env.DNS_SERVERS || '127.0.0.1,8.8.8.8,1.1.1.1').split(',');
+var DNS_QUERY_TIMEOUT = 3000;
 var DNS_CACHE_MAX = 1024;
 var dnsCache = new Map();
 
@@ -59,7 +62,7 @@ function isIp(host) {
   return /^\d+\.\d+\.\d+\.\d+$/.test(host) || host.indexOf(':') !== -1;
 }
 
-function dohResolve(host, cb) {
+function resolveHost(host, cb) {
   var now = Date.now();
   var entry = dnsCache.get(host);
   if (entry && entry.expires > now) {
@@ -81,47 +84,41 @@ function dohResolve(host, cb) {
   function finish(ip) {
     if (settled) return;
     settled = true;
+    clearTimeout(timer);
     delete entry.pending;
     for (var i = 0; i < pending.length; i++) pending[i](ip);
   }
 
-  /* 支持 http/https 两种 DoH 端点（http 仅用于本地测试注入） */
-  var transport = DOH_ENDPOINT.indexOf('https://') === 0 ? https : http;
-  var req = transport.get(DOH_ENDPOINT + '?name=' + encodeURIComponent(host) + '&type=A', {
-    headers: { 'Accept': 'application/dns-json' }
-  }, function (res) {
-    var body = '';
-    res.on('data', function (c) { body += c; });
-    res.on('end', function () {
-      try {
-        var j = JSON.parse(body);
-        var answer = null;
-        for (var i = 0; j.Answer && i < j.Answer.length; i++) {
-          if (j.Answer[i].type === 1) { answer = j.Answer[i]; break; }
-        }
-        if (!answer) { entry.expires = now + 30000; finish(null); return; }
-        var ttl = answer.TTL;
-        if (ttl < 60) ttl = 60;
-        if (ttl > 3600) ttl = 3600;
-        entry.ips = [answer.data];
-        entry.expires = now + ttl * 1000;
-        finish(answer.data);
-      } catch (e) {
-        entry.expires = now + 30000;
-        finish(null);
-      }
-    });
-  });
-  req.on('error', function () {
+  /* UDP 53 直连 DNS_SERVERS：不经过系统解析配置，也不复用上层 HTTP(S) 通道 */
+  var res = new dns.Resolver();
+  try { res.setServers(DNS_SERVERS); } catch (e) { entry.expires = now + 30000; finish(null); return; }
+  var timer = setTimeout(function () {
+    res.cancel(); /* 取消挂起的查询，防无限等待 */
     entry.expires = now + 30000;
     finish(null);
+  }, DNS_QUERY_TIMEOUT);
+
+  res.resolve4(host, { ttl: true }, function (err, records) {
+    clearTimeout(timer);
+    if (err || !records || !records[0]) {
+      entry.expires = now + 30000; /* 失败短缓存，防重试风暴 */
+      finish(null);
+      return;
+    }
+    var rec = records[0];
+    var ttl = rec.ttl;
+    if (ttl < 60) ttl = 60;
+    if (ttl > 3600) ttl = 3600;
+    entry.ips = [rec.address];
+    entry.expires = now + ttl * 1000;
+    finish(rec.address);
   });
-  req.setTimeout(DOH_TIMEOUT, function () { req.destroy(); });
 }
 
-/* 连接目标：IP 直连；域名走 DoH 解析。
- * DoH 失败或返回的 IP 连不上（含 SYN 被丢导致的挂起，10s 超时兜底）时，
- * fallback 系统 DNS，保证可用性。onConnect(target) 成功回调，onError() 最终失败回调。 */
+/* 连接目标：IP 直连；域名走 UDP DNS 解析（不依赖系统解析配置）。
+ * DNS 解析失败或返回的 IP 连不上（含 SYN 被丢导致的挂起，10s 超时兜底）时，
+ * 不额外 fallback（系统 DNS 也已不可靠），直接通知调用方。onConnect(target)
+ * 成功回调，onError() 最终失败回调。 */
 var CONNECT_TIMEOUT = 10000;
 
 function connectTo(port, host, onConnect, onError) {
@@ -151,8 +148,8 @@ function connectTo(port, host, onConnect, onError) {
     });
   }
   if (isIp(host)) { dial(host, fail); return; }
-  dohResolve(host, function (ip) {
-    if (ip) dial(ip, function () { dial(host, fail); }); /* DoH IP 连不上 -> 系统 DNS */
+  resolveHost(host, function (ip) {
+    if (ip) dial(ip, function () { dial(host, fail); }); /* DNS IP 连不上 -> 系统 DNS */
     else dial(host, fail);
   });
 }

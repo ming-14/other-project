@@ -22,28 +22,46 @@ type UpstreamConfig struct {
 // CircuitConfig 熔断配置。账号池"时常报错但重试可成功",因此熔断必须温和:
 // 只有连续失败达到阈值才短暂冷却,冷却到期自动恢复。
 type CircuitConfig struct {
-	FailThreshold   int `json:"fail_threshold"`    // 连续失败多少次后熔断,默认 5
-	CooldownSeconds int `json:"cooldown_seconds"`  // 熔断冷却秒数,默认 15
+	FailThreshold   int `json:"fail_threshold"`   // 连续失败多少次后熔断,默认 5
+	CooldownSeconds int `json:"cooldown_seconds"` // 熔断冷却秒数,默认 15
 }
 
 // Config 网关整体配置。
 type Config struct {
-	Listen          string           `json:"listen"`             // 本地监听地址,默认 ":8080"
-	LocalKeys       []string         `json:"local_keys"`         // 本地出口鉴权 key,空列表 = 不鉴权
-	RetryTimes      int              `json:"retry_times"`        // 失败后最多换多少个上游重试,默认 3
-	MaxBodySize     int64            `json:"max_body_size"`      // 请求体缓存上限(字节),默认 64MB
-	Upstreams       []UpstreamConfig `json:"upstreams"`
-	Circuit         CircuitConfig    `json:"circuit"`
-	ModelsCacheTTL  int              `json:"models_cache_ttl_seconds"` // /v1/models 合并结果缓存秒数,默认 60
+	Listen         string           `json:"listen"`         // 本地监听地址,默认 ":8080"
+	LocalKeys      []string         `json:"local_keys"`     // 本地出口鉴权 key,空列表 = 不鉴权
+	RetryTimes     int              `json:"retry_times"`    // 每个上游的最大尝试次数(含第一次),默认 3
+	RetryDelayMs   int              `json:"retry_delay_ms"` // 原地重试间隔毫秒,默认 0=立即
+	MaxBodySize    int64            `json:"max_body_size"`  // 请求体缓存上限(字节),默认 64MB
+	Upstreams      []UpstreamConfig `json:"upstreams"`
+	Circuit        CircuitConfig    `json:"circuit"`
+	ModelsCacheTTL int              `json:"models_cache_ttl_seconds"` // /v1/models 合并结果缓存秒数,默认 60
+
+	// 超时配置(秒),0 = 不限制
+	UpstreamTimeout       int `json:"upstream_timeout_seconds"`        // 非流式请求整体超时,默认 120
+	StreamIdleTimeout     int `json:"stream_idle_timeout_seconds"`     // 流式响应两次数据之间的空闲超时,默认 60
+	ResponseHeaderTimeout int `json:"response_header_timeout_seconds"` // 等待上游响应头超时,默认 120
+
+	// 并发抢答配置
+	ParallelFetch int `json:"parallel_fetch"` // 并发请求上游数,1=关闭(顺序重试),默认 1
+
+	// SSE 流完整性检查
+	StreamCompletionCheck bool `json:"stream_completion_check"` // 检查并修复不完整 SSE 流(缺 finish_reason/[DONE]),默认 true
 }
 
 func defaultConfig() *Config {
 	return &Config{
-		Listen:         ":8080",
-		RetryTimes:     3,
-		MaxBodySize:    64 << 20,
-		Circuit:        CircuitConfig{FailThreshold: 5, CooldownSeconds: 15},
-		ModelsCacheTTL: 60,
+		Listen:                ":8080",
+		RetryTimes:            3,
+		RetryDelayMs:          0,
+		MaxBodySize:           64 << 20,
+		Circuit:               CircuitConfig{FailThreshold: 5, CooldownSeconds: 15},
+		ModelsCacheTTL:        60,
+		UpstreamTimeout:       120,
+		StreamIdleTimeout:     60,
+		ResponseHeaderTimeout: 120,
+		ParallelFetch:         1,
+		StreamCompletionCheck: true,
 	}
 }
 
@@ -67,8 +85,8 @@ func (c *Config) validate() error {
 	if len(c.Upstreams) == 0 {
 		return errors.New("config requires at least one upstream")
 	}
-	if c.RetryTimes < 0 {
-		return errors.New("retry_times must be >= 0")
+	if c.RetryTimes < 1 {
+		return errors.New("retry_times must be >= 1")
 	}
 	if c.MaxBodySize <= 0 {
 		return errors.New("max_body_size must be > 0")
@@ -81,6 +99,18 @@ func (c *Config) validate() error {
 	}
 	if c.ModelsCacheTTL < 0 {
 		c.ModelsCacheTTL = 60
+	}
+	if c.UpstreamTimeout < 0 {
+		c.UpstreamTimeout = 120
+	}
+	if c.StreamIdleTimeout < 0 {
+		c.StreamIdleTimeout = 60
+	}
+	if c.ResponseHeaderTimeout < 0 {
+		c.ResponseHeaderTimeout = 120
+	}
+	if c.ParallelFetch <= 0 {
+		c.ParallelFetch = 1
 	}
 	seen := make(map[string]bool, len(c.Upstreams))
 	for i := range c.Upstreams {

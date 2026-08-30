@@ -28,11 +28,17 @@
   ],
   "listen": "127.0.0.1:18080",
   "retry_times": 3,
+  "retry_delay_ms": 0,
   "circuit": {
     "cooldown_seconds": 15,
     "fail_threshold": 5
   },
   "models_cache_ttl_seconds": 60,
-  "max_body_size": 67108864
+  "max_body_size": 67108864,
+  "upstream_timeout_seconds": 120,
+  "stream_idle_timeout_seconds": 60,
+  "response_header_timeout_seconds": 120,
+  "parallel_fetch": 1,
+  "stream_completion_check": true
 }
 

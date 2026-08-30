@@ -42,6 +42,11 @@ func sseBody(events ...string) string {
 	return sb.String()
 }
 
+// noTimeoutGateway 返回超时未配置(0=不限制)的网关,用于直接测试校验函数。
+func noTimeoutGateway() *Gateway {
+	return &Gateway{cfg: &Config{}}
+}
+
 // TestStreamingThinkingCheckPass 验证 SSE 流含思考内容时正常透传。
 func TestStreamingThinkingCheckPass(t *testing.T) {
 	body := sseBody(
@@ -55,7 +60,7 @@ func TestStreamingThinkingCheckPass(t *testing.T) {
 		Body:       io.NopCloser(strings.NewReader(body)),
 	}
 	rec := httptest.NewRecorder()
-	err := copyStreamingWithThinkingCheck(rec, resp)
+	err := noTimeoutGateway().copyStreamingWithThinkingCheck(rec, resp)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, rec.Code)
 	require.Contains(t, rec.Body.String(), "reasoning_content")
@@ -76,7 +81,7 @@ func TestStreamingThinkingCheckFail(t *testing.T) {
 		Body:       io.NopCloser(strings.NewReader(body)),
 	}
 	rec := httptest.NewRecorder()
-	err := copyStreamingWithThinkingCheck(rec, resp)
+	err := noTimeoutGateway().copyStreamingWithThinkingCheck(rec, resp)
 	require.ErrorIs(t, err, errNoThinkingContent)
 	require.Equal(t, 0, rec.Body.Len(), "切换失败时不得向客户端写入任何字节")
 }
@@ -94,7 +99,7 @@ func TestStreamingThinkingCheckLate(t *testing.T) {
 		Body:       io.NopCloser(strings.NewReader(sseBody(events...))),
 	}
 	rec := httptest.NewRecorder()
-	err := copyStreamingWithThinkingCheck(rec, resp)
+	err := noTimeoutGateway().copyStreamingWithThinkingCheck(rec, resp)
 	require.ErrorIs(t, err, errNoThinkingContent)
 	require.Equal(t, 0, rec.Body.Len())
 }
@@ -109,7 +114,7 @@ func TestNonStreamingThinkingCheck(t *testing.T) {
 		Body:       io.NopCloser(strings.NewReader(withThinking)),
 	}
 	rec := httptest.NewRecorder()
-	require.NoError(t, copyNonStreamingWithThinkingCheck(rec, resp))
+	require.NoError(t, noTimeoutGateway().copyNonStreamingWithThinkingCheck(rec, resp))
 	require.Contains(t, rec.Body.String(), "think")
 
 	// 不含思考内容 → 报错且不写响应
@@ -120,7 +125,7 @@ func TestNonStreamingThinkingCheck(t *testing.T) {
 		Body:       io.NopCloser(strings.NewReader(noThinking)),
 	}
 	rec = httptest.NewRecorder()
-	err := copyNonStreamingWithThinkingCheck(rec, resp)
+	err := noTimeoutGateway().copyNonStreamingWithThinkingCheck(rec, resp)
 	require.ErrorIs(t, err, errNoThinkingContent)
 	require.Equal(t, 0, rec.Body.Len())
 }
